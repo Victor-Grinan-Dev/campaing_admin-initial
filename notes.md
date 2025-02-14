@@ -53,6 +53,21 @@ Inside the folder that you want to ceate the django projects
     quit()
 ```
 
+- ALTERNATIVELY you can create a requirements.txt in the root directory and copy this content. (this is a cross origin set of repo for headless python-react monorepo)
+
+```text
+asgiref
+Django
+django-cors-headers
+djangorestframework
+djangorestframework-simplejwt
+PyJWT
+pytz
+sqlparse
+psycopg2-binary
+python-dotenv
+```
+
 - cd.. out of the .venv to the root folder and type:
 
 ```shell

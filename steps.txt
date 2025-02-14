@@ -1,0 +1,137 @@
+
+1- create a folder and inside it create a .venv
+
+2- create a requirements.txt and inside of it copy:
+asgiref
+Django
+django-cors-headers
+djangorestframework
+djangorestframework-simplejwt
+PyJWT
+pytz
+sqlparse
+psycopg2-binary
+python-dotenv
+
+
+3- install the txt with:
+pip install -r requirements.txt
+
+
+4- start a backend project:
+django-admin startproject backend
+
+
+5- start an app "api"
+py manage.py startapp api
+
+
+6- get into inner backend/backend/settings.py 
+
+    - from datetime import timedelta
+    - from dotenv import load_dotenv
+    - import os
+
+7- call fuction load_dotenv right under the imports:
+load_dotenv()
+
+
+8- to avoid errors for now lets ALLOWED_HOST all:
+ALLOWED_HOST=["*"]
+
+
+9- add REST_FRAMEWORK and SIMPLE_JWT under ALLOWED_HOST:
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+10- add the installed app "api", "rest_framework" and "corsheaders" to INSTALLED_APPS:
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    "api",
+    "rest_framework",
+    "corsheaders",
+]
+
+11- ad to MIDDLEWARE "corsheaders.middleware.CorsMiddleware":
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+12- add 2 variables to the end of the file:
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWS_CREDENTIALS = True
+
+*** in the end this needs to be changed to not allow every origin
+
+
+13- create inside the api folder a serializer.py filewith this code inside:
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
+        extra_kwargs = {"password": {"write_only": True, "required": True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+
+14- inside the api folder find the views.py and write:
+from django.shortcuts import render
+from django.contrib.auth.models import User
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .serializer import UserSerializer
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = User
+    permission_classes = [AllowAny]
+
+
+15- lets move to the inner backend file to the urls.py
+from django.contrib import admin
+from django.urls import path, include
+from api.views import CreateUserView  
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/user/register/', CreateUserView.as_view(), name='register'),
+    path('api/token/', TokenObtainPairView.as_view(), name='get_token'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh'),
+    path('api-auth/', include('rest_framework.urls')),
+]
+
+16- now in the console we need to update the migrations:
+py manage.py makemigrations
+py manage.py migrate
+
+17- run the app:
+py manage.py runserver
