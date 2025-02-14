@@ -1,4 +1,4 @@
-
+victor2 newSecretPass
 1- create a folder and inside it create a .venv
 
 2- create a requirements.txt and inside of it copy:
@@ -102,20 +102,45 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-14- inside the api folder find the views.py and write:
+14- [VIEWS] inside the api folder find the views.py and write:
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializer import UserSerializer
+from .serializer import UserSerializer, NoteSerializer
+from .models import Note
+
+class NoteListCreate(generics.ListCreateAPIView):
+    # queryset = Note.objects.all()
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Note.objects.filter(author=user)
+    
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            serializer.save(author=self.request.user)
+        else:
+            print(serializer.error)
+
+
+class NoteDelete(generics.DestroyAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Note.objects.filter(author=user)
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = User
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
 
-15- lets move to the inner backend file to the urls.py
+15-[URLS] lets move to the inner backend file to the urls.py
 from django.contrib import admin
 from django.urls import path, include
 from api.views import CreateUserView  
@@ -127,14 +152,11 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='get_token'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh'),
     path('api-auth/', include('rest_framework.urls')),
+    path('api/', include('api.urls')),
 ]
 
-16- now in the console we need to update the migrations:
-py manage.py makemigrations
-py manage.py migrate
 
-
-17- create some models inside api models.py:
+16- create some models inside api models.py:
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -147,4 +169,29 @@ class Note(models.Model):
         return self.title
 
 
-18-
+17- get new serializer:
+from django.contrib.auth.models import User
+from rest_framework import serializers
+from .models import Note
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+    
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ["id", "title", "content", "created_at", "author"]
+        extra_kwargs = {"author": {"read_only": True}}
+
+
+
+18- now in the console we need to update the migrations:
+py manage.py makemigrations
+py manage.py migrate
