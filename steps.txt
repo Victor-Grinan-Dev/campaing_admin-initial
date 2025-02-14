@@ -95,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email"]
-        extra_kwargs = {"password": {"write_only": True, "required": True}}
+        extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
@@ -133,5 +133,18 @@ urlpatterns = [
 py manage.py makemigrations
 py manage.py migrate
 
-17- run the app:
-py manage.py runserver
+
+17- create some models inside api models.py:
+from django.db import models
+from django.contrib.auth.models import User
+
+class Note(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+
+    def __str__(self):
+        return self.title
+
+
+18-
