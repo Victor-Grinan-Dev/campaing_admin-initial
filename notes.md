@@ -5,6 +5,7 @@
 https://www.youtube.com/watch?v=xldTxXtNiuk
 https://www.youtube.com/watch?v=F9o4GSkSo40&t=250s
 https://www.youtube.com/watch?v=Rp5vd34d-z4&t=6684s
+full tutorial: https://www.youtube.com/watch?v=c-QsfbznSXI
 
 # Django course
 
@@ -51,6 +52,7 @@ Inside the folder that you want to ceate the django projects
 ```shell
     quit()
 ```
+
 - cd.. out of the .venv to the root folder and type:
 
 ```shell
