@@ -195,3 +195,11 @@ class NoteSerializer(serializers.ModelSerializer):
 18- now in the console we need to update the migrations:
 py manage.py makemigrations
 py manage.py migrate
+
+
+FRONTEND
+- out of the backend file in cmd:
+npm create vite@latest frontend -- --template react 
+
+packages:
+npm install axios react-router-dom jwt-decode
