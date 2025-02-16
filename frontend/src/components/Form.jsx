@@ -45,6 +45,8 @@ const Form = ({route, method}) => {
             method === "register" && <input type="password" name="confirm" placeholder="confirm password" value={confirm} onChange={e=>setConfirm(e.target.value)}/>        
         }
         <button type="submit">{name}</button>
+
+        {Loading && <div>Loading...</div>}
     </form>
   )
 }
